@@ -1,19 +1,28 @@
-_base_ = '../common/lsj-200e_coco-detection.py'
+_base_ = '../common/lsj-100e_coco-detection.py'
 
 image_size = (1024, 1024)
 batch_augments = [dict(type='BatchFixedSizePad', size=image_size)]
+max_epochs = 25
 
 model = dict(
     type='CenterNet',
     data_preprocessor=dict(
-        type='DetDataPreprocessor',
-        mean=[123.675, 116.28, 103.53],
-        std=[58.395, 57.12, 57.375],
+        type='HighDetDataPreprocessor',
+        # mean=[0.0] * 10,
+        mean=None,
+        # std=[1.0] * 10,
+        std=None,
         bgr_to_rgb=True,
         pad_size_divisor=32,
         batch_augments=batch_augments),
+    stem=dict(
+        type='RGBHSIStem',
+        in_channels=10,
+        out_channels=64,
+    ),
     backbone=dict(
         type='ResNet',
+        in_channels = 10,
         depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
@@ -33,7 +42,7 @@ model = dict(
         relu_before_extra_convs=True),
     bbox_head=dict(
         type='CenterNetUpdateHead',
-        num_classes=80,
+        num_classes=5,
         in_channels=256,
         stacked_convs=4,
         feat_channels=256,
@@ -45,7 +54,9 @@ model = dict(
             loss_weight=1.0),
         loss_bbox=dict(type='GIoULoss', loss_weight=2.0),
     ),
-    train_cfg=None,
+    
+    train_cfg = dict(
+        type='EpochBasedTrainLoop', max_epochs=max_epochs, val_interval=5),
     test_cfg=dict(
         nms_pre=1000,
         min_bbox_size=0,
@@ -53,12 +64,12 @@ model = dict(
         nms=dict(type='nms', iou_threshold=0.6),
         max_per_img=100))
 
-train_dataloader = dict(batch_size=8, num_workers=4)
+
 # Enable automatic-mixed-precision training with AmpOptimWrapper.
 optim_wrapper = dict(
     type='AmpOptimWrapper',
     optimizer=dict(
-        type='SGD', lr=0.01 * 4, momentum=0.9, weight_decay=0.00004),
+        type='SGD', lr=1e-4, momentum=0.9, weight_decay=0.00004),
     paramwise_cfg=dict(norm_decay_mult=0.))
 
 param_scheduler = [
@@ -80,4 +91,5 @@ param_scheduler = [
 # NOTE: `auto_scale_lr` is for automatically scaling LR,
 # USER SHOULD NOT CHANGE ITS VALUES.
 # base_batch_size = (8 GPUs) x (8 samples per GPU)
-auto_scale_lr = dict(base_batch_size=64)
+auto_scale_lr = dict(base_batch_size=8)
+train_dataloader = dict(batch_size=8, num_workers=8)

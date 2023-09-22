@@ -20,7 +20,7 @@ image_size = (1024, 1024)
 backend_args = None
 
 train_pipeline = [
-    dict(type='LoadImageFromFile', backend_args=backend_args),
+    dict(type='LoadImageFromFile', backend_args=backend_args, imdecode_backend='tifffile'),
     dict(type='LoadAnnotations', with_bbox=True),
     dict(
         type='RandomResize',
@@ -38,7 +38,7 @@ train_pipeline = [
     dict(type='PackDetInputs')
 ]
 test_pipeline = [
-    dict(type='LoadImageFromFile', backend_args=backend_args),
+    dict(type='LoadImageFromFile', backend_args=backend_args, imdecode_backend='tifffile'),
     dict(type='Resize', scale=(1333, 800), keep_ratio=True),
     dict(type='LoadAnnotations', with_bbox=True),
     dict(
@@ -59,8 +59,8 @@ train_dataloader = dict(
         dataset=dict(
             type=dataset_type,
             data_root=data_root,
-            ann_file='annotations/instances_train2017.json',
-            data_prefix=dict(img='train2017/'),
+            ann_file='train.json',
+            data_prefix=dict(img=''),
             filter_cfg=dict(filter_empty_gt=True, min_size=32),
             pipeline=train_pipeline,
             backend_args=backend_args)))
@@ -73,8 +73,8 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='annotations/instances_val2017.json',
-        data_prefix=dict(img='val2017/'),
+        ann_file='val.json',
+        data_prefix=dict(img=''),
         test_mode=True,
         pipeline=test_pipeline,
         backend_args=backend_args))
@@ -82,8 +82,9 @@ test_dataloader = val_dataloader
 
 val_evaluator = dict(
     type='CocoMetric',
-    ann_file=data_root + 'annotations/instances_val2017.json',
+    ann_file=data_root + 'val.json',
     metric='bbox',
+    iou_thrs=[0.5],
     format_only=False,
     backend_args=backend_args)
 test_evaluator = val_evaluator
@@ -91,7 +92,7 @@ test_evaluator = val_evaluator
 max_epochs = 25
 
 train_cfg = dict(
-    type='EpochBasedTrainLoop', max_epochs=max_epochs, val_interval=5)
+    type='EpochBasedTrainLoop', max_epochs=max_epochs, val_interval=1)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 

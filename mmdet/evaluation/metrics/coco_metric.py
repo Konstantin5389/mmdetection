@@ -390,7 +390,7 @@ class CocoMetric(BaseMetric):
             the metrics, and the values are corresponding results.
         """
         logger: MMLogger = MMLogger.get_current_instance()
-
+        
         # split gt and prediction list
         gts, preds = zip(*results)
 
@@ -439,7 +439,7 @@ class CocoMetric(BaseMetric):
                 log_msg = ''.join(log_msg)
                 logger.info(log_msg)
                 continue
-
+            
             # evaluate proposal, bbox and segm
             iou_type = 'bbox' if metric == 'proposal' else metric
             if metric not in result_files:
@@ -579,7 +579,15 @@ class CocoMetric(BaseMetric):
                     key = f'{metric}_{metric_item}'
                     val = coco_eval.stats[coco_metric_names[metric_item]]
                     eval_results[key] = float(f'{round(val, 3)}')
-
+                recalls = coco_eval.eval['recall']
+                AR = {
+                    "airport": recalls[0, 0, -1, 0],
+                    "dam": recalls[0, 1, -1, 0],
+                    "factory": recalls[0, 2, -1, 0],
+                    "mine": recalls[0, 3, -1, 0],
+                    "playground": recalls[0, 4, -1, 0],  
+                }
+                print(AR)
                 ap = coco_eval.stats[:6]
                 logger.info(f'{metric}_mAP_copypaste: {ap[0]:.3f} '
                             f'{ap[1]:.3f} {ap[2]:.3f} {ap[3]:.3f} '

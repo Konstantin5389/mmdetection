@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 python tools/test.py configs/centernet/centernet-update_r50_fpn_8xb8-amp-lsj-200e_coco.py work_dirs/centernet-update_r50_fpn_8xb8-amp-lsj-200e_coco/epoch_17.pth --work-dir work_dirs/centernet-update_r50_fpn_8xb8-amp-lsj-200e_coco --out results.pkl --show-dir vis

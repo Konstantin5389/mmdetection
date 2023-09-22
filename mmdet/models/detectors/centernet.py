@@ -12,6 +12,7 @@ class CenterNet(SingleStageDetector):
     """
 
     def __init__(self,
+                 stem: ConfigType,
                  backbone: ConfigType,
                  neck: ConfigType,
                  bbox_head: ConfigType,
@@ -27,3 +28,4 @@ class CenterNet(SingleStageDetector):
             test_cfg=test_cfg,
             data_preprocessor=data_preprocessor,
             init_cfg=init_cfg)
+        self.stem = MODELS.build(stem)
